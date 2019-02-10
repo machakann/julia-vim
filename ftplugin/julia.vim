@@ -103,5 +103,11 @@ setlocal keywordprg=:JuliaDocKeywordprg
 let b:undo_ftplugin .= " | setlocal keywordprg<"
 let b:undo_ftplugin .= " | delcommand JuliaDoc | delcommand JuliaDocKeywordprg"
 
+" LaTeX expression to Unicode symbol
+inoremap <silent> <Plug>(JuliaLaTextoUnicode) <C-r>=julia#unicodesymbol#complete()<CR>
+if !get(g:, 'julia_no_default_keymapping', 0)
+  imap <Tab> <Plug>(JuliaLaTextoUnicode)
+endif
+
 let &cpo = s:save_cpo
 unlet s:save_cpo
