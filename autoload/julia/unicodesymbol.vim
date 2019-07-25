@@ -3,15 +3,16 @@ let s:LaTex_pattern = '\m\\\%([_\^][-+=()[:alnum:]]*\|\d\+\/\d*\|\w\+\|:[-+_[:al
 let julia#unicodesymbol#__startcol__ = -1
 let julia#unicodesymbol#__matches__ = []
 
-function! julia#unicodesymbol#complete() abort
+function! julia#unicodesymbol#complete(...) abort
+  let fallbackkey = get(a:000, 0, "\<Tab>")
   let line = getline('.')[: col('.')-1]
   if line is# ''
-    return ''
+    return fallbackkey
   endif
 
   let [prefix, startcol, _] = matchstrpos(line, s:LaTex_pattern)
   if startcol < 0
-    return ''
+    return fallbackkey
   endif
 
   if !exists('s:LaTex_list')
