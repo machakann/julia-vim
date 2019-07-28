@@ -1,0 +1,9 @@
+name = "TestStatus"
+uuid = "3316a8b0-afc2-11e9-0570-f1be1d5c09f3"
+authors = ["'Masaaki Nakamura' <mckn@outlook.jp>"]
+version = "0.1.0"
+
+[deps]
+Base64 = "2a0f44e3-6c83-55bd-87e4-b1978d98bd5f"
+CRC32c = "8bf52ea8-c179-5cab-976a-9e18b702a9bc"
+Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"

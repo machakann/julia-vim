@@ -1,0 +1,12 @@
+set encoding=utf-8
+
+" Add plugin root into 'runtimepath'
+execute 'set runtimepath+=' . expand('<sfile>:p:h:h')
+
+" Enable :Assert, :Throws, :Fail, :TODO, and :Skip commands
+let g:assert = themis#helper('assert')
+call themis#helper('command').with(g:assert)
+
+let g:SEPARATOR = has('win32') ? '\' : '/'
+let g:TESTPACKAGEDIR = join([expand('<sfile>:p:h'), 'TestPackages'], g:SEPARATOR)
+filetype plugin on

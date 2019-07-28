@@ -1,0 +1,10 @@
+name = "TestTestSuccess"
+uuid = "f4c7b3d0-afc4-11e9-08c9-97285375739c"
+authors = ["'Masaaki Nakamura' <mckn@outlook.jp>"]
+version = "0.1.0"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]

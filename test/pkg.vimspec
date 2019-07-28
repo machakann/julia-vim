@@ -1,0 +1,161 @@
+let s:TEMPDIR = tempname()
+
+Describe [pkg]
+
+  Before all
+    call mkdir(s:TEMPDIR)
+  End
+
+  Context :JuliaPkgStatus
+
+    Before all
+      setfiletype julia
+    End
+
+    It shows 'empty environment' when in new package
+      let packageroot = join([g:TESTPACKAGEDIR, 'TestStatusEmpty'], g:SEPARATOR)
+      let project_toml = join([packageroot, 'Project.toml'], g:SEPARATOR)
+      execute 'cd' packageroot
+      let output = split(execute(':JuliaPkgStatus'), '\n')
+      Assert NotEmpty(output)
+      Assert Equals(output[0], 'Project TestStatusEmpty v0.1.0')
+      Assert Match(output[1], '    Status `[^`]\+`')
+      let target = fnamemodify(matchstr(output[1], '\C^    Status `\zs[^`]\+\ze`'), ':p')
+      Assert Equals(target, project_toml)
+      Assert Equals(output[2], '  (empty environment)')
+    End
+
+    It shows a list of packages
+      let packageroot = join([g:TESTPACKAGEDIR, 'TestStatus'], g:SEPARATOR)
+      let project_toml = join([packageroot, 'Project.toml'], g:SEPARATOR)
+      execute 'cd' packageroot
+      let output = split(execute(':JuliaPkgStatus'), '\n')
+      Assert NotEmpty(output)
+      Assert Equals(output[0], 'Project TestStatus v0.1.0')
+      Assert Match(output[1], '    Status `[^`]\+`')
+      let target = fnamemodify(matchstr(output[1], '\C^    Status `\zs[^`]\+\ze`'), ':p')
+      Assert Equals(target, project_toml)
+      Assert Equals(output[2], '  [2a0f44e3] Base64 ')
+    End
+
+    It accepts an argument
+      let packageroot = join([g:TESTPACKAGEDIR, 'TestStatus'], g:SEPARATOR)
+      let project_toml = join([packageroot, 'Project.toml'], g:SEPARATOR)
+      execute 'cd' packageroot
+      let output = split(execute(':JuliaPkgStatus CRC32c'), '\n')
+      Assert NotEmpty(output)
+      Assert Equals(output[0], 'Project TestStatus v0.1.0')
+      Assert Match(output[1], '    Status `[^`]\+`')
+      let target = fnamemodify(matchstr(output[1], '\C^    Status `\zs[^`]\+\ze`'), ':p')
+      Assert Equals(target, project_toml)
+      Assert Equals(output[2], '  [8bf52ea8] CRC32c ')
+    End
+
+    It accepts multiple arguments
+      let packageroot = join([g:TESTPACKAGEDIR, 'TestStatus'], g:SEPARATOR)
+      let project_toml = join([packageroot, 'Project.toml'], g:SEPARATOR)
+      execute 'cd' packageroot
+      let output = split(execute(':JuliaPkgStatus Base64 CRC32c'), '\n')
+      Assert NotEmpty(output)
+      Assert Equals(output[0], 'Project TestStatus v0.1.0')
+      Assert Match(output[1], '    Status `[^`]\+`')
+      let target = fnamemodify(matchstr(output[1], '\C^    Status `\zs[^`]\+\ze`'), ':p')
+      Assert Equals(target, project_toml)
+      Assert Equals(output[2], '  [2a0f44e3] Base64 ')
+      Assert Equals(output[3], '  [8bf52ea8] CRC32c ')
+    End
+
+  End
+
+  Context :JuliaPkgAdd
+
+    Before all
+      setfiletype julia
+      execute 'cd' s:TEMPDIR
+      call system('julia --project=@. -e "import Pkg;Pkg.generate(\"TestAdd\")"')
+      let packageroot = join([s:TEMPDIR, 'TestAdd'], g:SEPARATOR)
+      execute 'cd' packageroot
+    End
+
+    It throws error without argument
+      Throws :JuliaPkgAdd
+    End
+
+    It can add a package
+      JuliaPkgAdd Base64
+      Assert Equals(julia#pkg#waitfor('JuliaPkgAddDone', 30), 0)
+      let project_toml = join([s:TEMPDIR, 'TestAdd', 'Project.toml'], g:SEPARATOR)
+      let project_info = readfile(project_toml)
+      Assert NotEmpty(filter(copy(project_info), 'v:val =~# ''\C^Base64 = "\x\+-\x\+-\x\+-\x\+-\x\+"'''))
+    End
+
+    It can add multiple packages
+      JuliaPkgAdd CRC32c Dates
+      Assert Equals(julia#pkg#waitfor('JuliaPkgAddDone', 30), 0)
+      let project_toml = join([s:TEMPDIR, 'TestAdd', 'Project.toml'], g:SEPARATOR)
+      let project_info = readfile(project_toml)
+      Assert NotEmpty(filter(copy(project_info), 'v:val =~# ''\C^CRC32c = "\x\+-\x\+-\x\+-\x\+-\x\+"'''))
+      Assert NotEmpty(filter(copy(project_info), 'v:val =~# ''\C^Dates = "\x\+-\x\+-\x\+-\x\+-\x\+"'''))
+    End
+
+  End
+
+  Context :JuliaPkgRemove
+
+    Before all
+      setfiletype julia
+      execute 'cd' s:TEMPDIR
+      call system('julia --project=@. -e "import Pkg;Pkg.generate(\"TestRemove\")"')
+      let packageroot = join([s:TEMPDIR, 'TestRemove'], g:SEPARATOR)
+      execute 'cd' packageroot
+      call system('julia --project=@. -e "import Pkg;Pkg.add(\"Base64\", \"CRC32c\", \"Dates\")"')
+    End
+
+    It throws error without argument
+      Throws :JuliaPkgRm
+    End
+
+    It can remove a package
+      JuliaPkgRemove Base64
+      Assert Equals(julia#pkg#waitfor('JuliaPkgRemoveDone', 30), 0)
+      let project_toml = join([s:TEMPDIR, 'TestRemove', 'Project.toml'], g:SEPARATOR)
+      let project_info = readfile(project_toml)
+      Assert Empty(filter(copy(project_info), 'v:val =~# ''\C^Base64 = "\x\+-\x\+-\x\+-\x\+-\x\+"'''))
+    End
+
+    It can remove multiple packages
+      JuliaPkgRemove CRC32c Dates
+      Assert Equals(julia#pkg#waitfor('JuliaPkgRemoveDone', 30), 0)
+      let project_toml = join([s:TEMPDIR, 'TestRemove', 'Project.toml'], g:SEPARATOR)
+      let project_info = readfile(project_toml)
+      Assert Empty(filter(copy(project_info), 'v:val =~# ''\C^CRC32c = "\x\+-\x\+-\x\+-\x\+-\x\+"'''))
+      Assert Empty(filter(copy(project_info), 'v:val =~# ''\C^Dates = "\x\+-\x\+-\x\+-\x\+-\x\+"'''))
+    End
+
+  End
+
+  Context :JuliaPkgTest
+
+    Before all
+      setfiletype julia
+    End
+
+    It runs test
+      let packageroot = join([g:TESTPACKAGEDIR, 'TestTestSuccess'], g:SEPARATOR)
+      execute 'cd' packageroot
+      JuliaPkgTest
+      Assert Equals(julia#pkg#waitfor('JuliaPkgTestDone', 30), 0)
+      Assert Empty(getqflist())
+    End
+
+    It runs test and adds errors to quickfix
+      let packageroot = join([g:TESTPACKAGEDIR, 'TestTestFail'], g:SEPARATOR)
+      execute 'cd' packageroot
+      JuliaPkgTest
+      Assert Equals(julia#pkg#waitfor('JuliaPkgTestDone', 30), 0)
+      Assert NotEmpty(getqflist())
+    End
+
+  End
+
+End

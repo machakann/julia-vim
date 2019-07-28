@@ -24,7 +24,7 @@ function! s:job_start(cmd, ...) abort
 endfunction
 
 function! s:job_wait(id, ...) abort
-  let timeout = get(a:000, 0, 10000)
+  let timeout = get(a:000, 0, 15000)
   call jobwait(a:id, timeout)
 endfunction
 
@@ -51,7 +51,7 @@ endfunction
 
 function! s:job_wait(jobs, ...) abort
   let jobs = copy(a:jobs)
-  let timeout = get(a:000, 0, 10000)
+  let timeout = get(a:000, 0, 15000)
   let starttime = reltime()
   while filter(jobs, 'job_status(v:val) ==# "run"') != []
     let elapsed = reltimefloat(reltime(starttime))*1000
