@@ -1,0 +1,61 @@
+language: generic
+
+env:
+  global:
+    - JULIA_VERSION=1.1.1
+
+jobs:
+  include:
+    - name: Vim 8.0
+      os: linux
+      env:
+        - VIM_VERSION=v8.0.0018
+    - name: Vim 8.1
+      os: linux
+      env:
+        - VIM_VERSION=v8.1.0000
+    - name: Vim master
+      os: linux
+      env:
+        - VIM_VERSION=master
+    - name: Nvim 0.3.0
+      os: linux
+      env:
+        - VIM_VERSION=nvim-v0.3.0
+    - name: Vim MacVim latest
+      os: osx
+      osx_image: xcode9.4
+      cache:
+        directories:
+          - $HOME/Library/Caches/Homebrew/
+          - /usr/local/Homebrew/Library/Homebrew/vendor/
+          - /usr/local/Homebrew/Library/Taps/
+      before_cache:
+        - brew cleanup
+
+addons:
+  apt:
+    packages:
+      - vim
+  homebrew:
+    packages:
+      - macvim
+    update: true
+
+install:
+  - bash scripts/travis/install-julia.sh
+  - export PATH=$HOME/julia/bin:$PATH
+  - bash scripts/travis/install-vim.sh
+  - export PATH=$HOME/vim/bin:$PATH
+
+before_script:
+  - git clone --depth 1 --branch v1.5.4 --single-branch https://github.com/thinca/vim-themis /tmp/vim-themis
+
+script:
+  - uname -a
+  - which -a julia
+  - julia --version
+  - which -a vim
+  - vim --version
+  - echo $THEMIS_VIM
+  - /tmp/vim-themis/bin/themis --reporter dot

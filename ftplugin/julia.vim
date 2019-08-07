@@ -109,5 +109,12 @@ if !get(g:, 'julia_no_default_keymapping', 0)
   imap <Tab> <Plug>(JuliaLaTextoUnicode)
 endif
 
+" Pkg
+command! -nargs=* -buffer -complete=custom,julia#pkg#completion#installed JuliaPkgStatus call julia#pkg#status([<f-args>], '@.')
+command! -nargs=+ -buffer -complete=custom,julia#pkg#completion#add_dev   JuliaPkgAdd    call julia#pkg#add([<f-args>], '@.')
+command! -nargs=+ -buffer -complete=custom,julia#pkg#completion#installed JuliaPkgRemove call julia#pkg#remove([<f-args>], '@.')
+command! -nargs=* -buffer -complete=custom,julia#pkg#completion#installed JuliaPkgTest   call julia#pkg#test([<f-args>], '@.')
+command! -nargs=0 -buffer JuliaPkgResolve call julia#pkg#resolve('@.')
+
 let &cpo = s:save_cpo
 unlet s:save_cpo

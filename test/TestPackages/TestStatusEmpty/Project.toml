@@ -1,0 +1,4 @@
+name = "TestStatusEmpty"
+uuid = "2cb81ad0-afc2-11e9-2448-490712e13765"
+authors = ["'Masaaki Nakamura' <mckn@outlook.jp>"]
+version = "0.1.0"
