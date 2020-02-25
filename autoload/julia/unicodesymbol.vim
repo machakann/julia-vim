@@ -5,10 +5,11 @@ let julia#unicodesymbol#__matches__ = []
 
 function! julia#unicodesymbol#complete(...) abort
   let fallbackkey = get(a:000, 0, "\<Tab>")
-  let line = getline('.')[: col('.')-1]
-  if line is# ''
+  let column = col('.')
+  if column == 1
     return fallbackkey
   endif
+  let line = getline('.')[: column - 2]
 
   let [prefix, startcol, _] = matchstrpos(line, s:LaTex_pattern)
   if startcol < 0
