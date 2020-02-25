@@ -17,7 +17,8 @@ function! julia#unicodesymbol#complete(...) abort
 
   if !exists('s:LaTex_list')
     let dict = julia_latex_symbols#get_dict()
-    let s:LaTex_list = map(items(dict), '{"word": v:val[1], "menu": v:val[0]}')
+    let list = sort(items(dict))
+    let s:LaTex_list = map(list, '{"word": v:val[1], "menu": v:val[0]}')
   endif
   let pat = '^' . s:escape(prefix)
   let g:julia#unicodesymbol#__startcol__ = startcol + 1
